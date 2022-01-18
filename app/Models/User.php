@@ -36,6 +36,16 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function getFirstNameAtribute($value)  
+    {
+        return ucfirst($value);
+    }
+
+    public function getLastNameAtribute($value)  
+    {
+        return ucfirst($value);
+    }
+
     /**
      * The attributes that should be cast.
      *

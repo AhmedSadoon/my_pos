@@ -8,6 +8,14 @@ use App\Models\User;
 
 class UserController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware(['permission:read_users'])->only('index');
+        $this->middleware(['permission:create_users'])->only('create');
+        $this->middleware(['permission:update_users'])->only('edit');
+        $this->middleware(['permission:delete_users'])->only('destroy');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -15,7 +23,15 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users=User::all();
+        $user=User::whereRoleIs('admin')->when($request->search,function($query) use ($request){
+
+                    return $query->where('first_name','like','%'. $request->search .'%')
+                            ->onWhere('last_name','like','%'. $request->search .'%');
+
+            });
+
+        })->latest()->paginate(2);
+        
         return view('dashboard.users.index',compact('users'));
     }
 
@@ -44,10 +60,12 @@ class UserController extends Controller
             'password'=>'requierd|confirmed',
         ]);
 
-        $request_data=$request->except(['password']);
+        $request_data=$request->except(['password','password_confirmation','permissions']);
         $request_data['password']=bcrypt($request->password);
 
         $user=User::create($request_data);
+        $user->attachRole('admin');
+        $user->syncPermissions($request->permissions);
 
         sesion()->flash('success',('site.added.successfully'));
 
@@ -62,9 +80,9 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(User $user)
     {
-        //
+        return view('dashboard.users.edit',compact('user'));
     }
 
     /**
@@ -76,7 +94,21 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'first_name'=>'requierd',
+            'last_name'=>'requierd',
+            'email'=>'requierd',
+        ]);
+
+        $request_data=$request->except(['permissions']);
+        $user->update($request_data);
+
+        $user->syncPermissions($request->permissions);
+
+        sesion()->flash('success',('site.updated.successfully'));
+
+        return redirect()->route('dashboard.users.index');
+
     }
 
     /**
@@ -85,8 +117,15 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+
+
+        sesion()->flash('success',('site.deleted.successfully'));
+
+        return redirect()->route('dashboard.users.index');
+
+    
     }
 }
