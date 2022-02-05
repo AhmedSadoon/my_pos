@@ -10,4 +10,12 @@ class Category extends Model
     use HasFactory;
 protected $guarded=[];
 
+public $translatedAttributes = ['name'];
+
+public function products()
+{
+    return $this->hasMany(Product::class);
+
+}//end of products
+
 }
