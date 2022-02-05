@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class CategoryController extends Controller
 {
@@ -13,9 +14,14 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $categories=Category::when($request->search,function($q) use ($request){
+
+            return $q->where('name','like','%'.$request->search .'%');
+
+        })->latest()->paginate(5);
+        return view('dashboard.categories.index',compact('categories'));
     }
 
     /**
@@ -36,19 +42,16 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate({
+            'name' => 'required|unique:categories',
+        });
+
+        Catecgry::create($request->all());
+        sesion()->flash('success',__('site.added_successfully'));
+        return redirect()->route('dashboard.categories.index');
+
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Category $category)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -58,7 +61,7 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        //
+        return view('dashboard.categories.edit',compact('category'));
     }
 
     /**
@@ -70,7 +73,14 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        $request->validate({
+            'name'=>'required|unique:categories,name,'. $category->id,
+        });
+
+        $category->update($request->all());
+        sesion()->flash('success',__('site.updated_successfully'));
+        return redirect()->route('dashboard.categories.index');
+
     }
 
     /**
@@ -81,6 +91,9 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        $category->delete();
+        sesion()->flash('success',__('site.deleted_successfully'));
+        return redirect()->route('dashboard.categories.index');
+
     }
 }
