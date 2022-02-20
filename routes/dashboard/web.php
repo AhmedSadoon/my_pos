@@ -15,6 +15,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(),'middleware' => [ 'lo
 
        Route::resource('/categories', App\Http\Controllers\Dashboard\CategoryController::class);
 
+       Route::resource('/products', App\Http\Controllers\Dashboard\ProductController::class);
+       Route::resource('/clients', App\Http\Controllers\Dashboard\ClientController::class)->except('show');
+
 
     });
 
