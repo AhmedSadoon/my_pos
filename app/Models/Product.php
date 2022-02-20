@@ -20,6 +20,11 @@ public $translatedAttributes = ['name','description'];
         return $this->belongsTo(Category::class);
     }
 
+    public function order()
+    {
+        return $this->belongsToMany(Order::class,'product_order');
+    }
+
     public function getImagePathAttribute()
     {
         return asset('uploads/product_images/'.$this->image);

@@ -1,32 +1,31 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']],
+    function () {
 
-Route::group(['prefix' => LaravelLocalization::setLocale(),'middleware' => [ 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath' ]], function()
-{
+        Route::prefix('dashboard')->name('dashboard.')->middleware(['auth'])->group(function () {
 
-    Route::prefix('dashboard')->name('dashboard.')->middleware(['auth'])->group(function(){
+            Route::get('/', 'WelcomeController@index')->name('welcome');
 
-        Route::get('/', [App\Http\Controllers\Dashboard\WelcomeController::class,'index'])->name('welcome');
+            //category routes
+            Route::resource('categories', 'CategoryController')->except(['show']);
 
-       Route::resource('/users', App\Http\Controllers\Dashboard\UserController::class);
+            //product routes
+            Route::resource('products', 'ProductController')->except(['show']);
+
+            //client routes
+            Route::resource('clients', 'ClientController')->except(['show']);
+            Route::resource('clients.orders', 'Client\OrderController')->except(['show']);
+
+            //order routes
+            Route::resource('orders', 'OrderController');
+            Route::get('/orders/{order}/products', 'OrderController@products')->name('orders.products');
 
 
-       Route::resource('/categories', App\Http\Controllers\Dashboard\CategoryController::class);
+            //user routes
+            Route::resource('users', 'UserController')->except(['show']);
 
-       Route::resource('/products', App\Http\Controllers\Dashboard\ProductController::class);
-       Route::resource('/clients', App\Http\Controllers\Dashboard\ClientController::class)->except('show');
-
-
+        });//end of dashboard routes
     });
-
-});
-
-
-
-
-
-
 
 

@@ -14,4 +14,16 @@ class Client extends Model
     protected $casts=[
         'phone'=>'array'
     ];
+
+    public function getNameAttribute($value)
+    {
+
+        return ucfirst($value);
+
+    }
+
+    public function order()
+    {
+        return $this->hasMany(order::class);
+    }
 }
